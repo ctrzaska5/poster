@@ -1,0 +1,109 @@
+---
+title: 
+author:
+  - name: Christopher Trzaska
+    affil: American University
+    email: ct8816a@american.edu
+    orcid: 0000-0002-1099-3857
+    main: true
+affiliation:
+  - num: 1
+    address: Data Analysis, American University
+main_findings:
+  - "What Does A Ride Cost? An Analysis of Rideshare Pricing in Boston, Massaschusetts"
+
+output: 
+  posterdown::posterdown_betterport:
+    self_contained: TRUE
+    pandoc_args: --mathjax
+    highlight: haddock
+    number_sections: false
+link-citations: true
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(results = 'asis',
+                      echo = FALSE,
+                      warning = FALSE,
+                      tidy = FALSE,
+                      message = FALSE,
+                      fig.align = 'center',
+                      out.width = "100%")
+options(knitr.table.format = "html")
+library(tidyverse)
+library(posterdown)
+library(readr)
+library(stargazer)
+cab_rides <- read_csv("cab_rides.csv")
+View(cab_rides)
+```
+
+
+# Introduction
+
+Uber and Lyft are a ride-sharing apps that allow users to request a ride from one location to another, similar to a taxi service. Last year alone, over 150 million Americans used the services at least once. The apps connect a user to a driver, who has been vetted by Uber to provide a point to point driver service in their personal vehicle, removing the need for dedicated taxicabs and special licensing requirements that artificially reduce the supply of drivers. However, unlike taxis that typically charge customers a fixed fee for each mile or minute spent on the journey, Uber and Lyft use a more complicated pricing system that considers travel distance, time of day, driver availability, and even local gas prices when determining the final cost. While users do not have control over many aspects of Uber and Lyft's pricing model, they do have control over the distance of their trip. This project will seek to examine how travel distance impacts the pricing model of the two largest rideshare companies in the United States. 
+
+
+## Objectives
+
+1. Provide clarity to rideshare users about the impact of travel distance on rideshare fares
+2. Construct a successful linear regression model 
+3. Use the created linear model to perform a successful statistical analysis of rideshare pricing
+4. Communicate the results of this model in a visually appealing manner in poster format
+
+## Methods
+- This data set includes information about 693,071 Uber and Lyft rides taken in Boston, primarily between major points of interest.
+- By creating a linear regression model that controls for departure location and cab company, we can analyze the impact of trip distance on the pricing structure of Uber and Lyft
+-Within the dataset, we focused primarily on the variables highlighting the price of the ride (price), what the start point was (source), and the total travel length (distance).
+- It is important to note that the dataset used to underpin this research is restricted to trips that began and ended in Boston, Massachusetts, United States. This means that the findings of the report are not inherently determinative of Uber and Lyft's global pricing strategies, which differ more from country to country than they do from American city to American city
+
+
+
+
+
+
+<br>
+
+# Results
+
+While there are other factors that influence the price of a rideshare ride, our data highlights the role of total travel distance. This figure highlights the general trend in Ubeer price specifically as travel distance increases.
+
+```{r, uberplot, fig.cap='This figure highlights the change in Uber prices as total travel distance increaces.'}
+uberplot=
+  cab_rides|>
+  filter(cab_type == "Uber")|>
+  ggplot(aes(x=distance, y = price))+
+  geom_point()+
+  geom_smooth(method = "lm", se = FALSE, color = "blue")+
+  labs(title = "Uber Pricing By Distance",
+       x = "Distance (miles)",
+       y = "Price (USD)")+
+  scale_y_continuous(limits = c(0,100),
+                     breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100))+
+  scale_x_continuous(limits = c(0, 8),
+                     breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8))+
+  theme_bw()
+
+uberplot
+```
+
+
+# Regression Model
+
+```{r, self_contained: yes}
+mod1 <- lm(price ~ distance + source, data = cab_rides)
+stargazer(mod1, type = "html", title = "Linear Regression Model: Impact of Distance on Ride-Sharing Pricing",
+          covariate.labels = c("Distance", "Source",
+          "Source: Boston University", 
+          "Source: Fenway",
+          "Source: Financial District",
+          "Source: Haymarket Square",
+          "Source: North End",
+          "Source: North Station",
+          "Source: Northeastern University",
+          "Source: Theatre District",
+          "Source: West End"),
+          dep.var.labels = "Price (USD)",
+          se = NULL, conf.int = TRUE)
+```
+When examining our regression model output, we find that travel distance is a statistically significant driver of rideshare prices in Boston. For each additional mile, we see an expected $2.85 increase in fare. We found that even when controlling for common lurking factors like start point and surge pricing, we see that travel distance has a consistent and notable effect on rideshare pricing. However, with an R-squared value of only .174, the effect is not as pronounced as our analysts anticipated at the beginning of our study. While statistically significant, our findings make clear that there are other pricing factors that influence the price of a rideshare ride that go beyond travel distance. Further research is necessary to determine how much of an impact these factors have. One final important note is that unlike taxicab rates, which are clearly posted in the vehicle (as required by most state laws), rideshare fare structures are proprietary information and are thus not publicly available. 
